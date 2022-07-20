@@ -28,3 +28,5 @@ class Donation(models.Model):
         "campaigns.Campaign", related_name="donations", on_delete=models.CASCADE
     )
     value = models.FloatField()
+
+    id = None
