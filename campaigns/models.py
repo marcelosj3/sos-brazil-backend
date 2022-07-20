@@ -14,7 +14,9 @@ class Campaign(models.Model):
     start_date = models.DateField()
     end_date = models.DateField()
 
-    # ong = models.ManyToOneRel()  #TODO ForeignKey
+    ong = models.ForeignKey(
+        "ongs.Ong", related_name="campaigns", on_delete=models.CASCADE
+    )
 
     id = None
 
