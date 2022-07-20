@@ -13,4 +13,7 @@ class Ong(models.Model):
     logo = models.CharField(max_length=255, null=True)
     created_at = models.DateField(auto_now=True)
 
+    causes = models.ManyToManyField("causes.Cause", related_name="ongs")
+    admins = models.ManyToManyField("users.User", related_name="ongs")
+
     id = None
