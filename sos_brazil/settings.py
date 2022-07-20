@@ -38,7 +38,7 @@ DJANGO_APPS = [
     "django.contrib.staticfiles"
 ]
 
-MY_APPS = ["users", "ongs", "causes"]
+MY_APPS = ["campaigns", "causes", "ongs", "users"]
 
 THIRD_PARTY_APPS = ["rest_framework", "rest_framework.authtoken"]
 
