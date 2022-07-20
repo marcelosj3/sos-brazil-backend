@@ -7,7 +7,7 @@ from users.utils import CustomUserManager
 
 
 class User(AbstractUser):
-    user_uuid = models.UUIDField(primary_key=True, default=uuid4, editable=False)
+    user_id = models.UUIDField(primary_key=True, default=uuid4, editable=False)
     first_name = models.CharField(max_length=100)
     last_name = models.CharField(max_length=255)
     email = models.CharField(max_length=100, unique=True)
