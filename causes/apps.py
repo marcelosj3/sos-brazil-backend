@@ -1,6 +1,6 @@
 from django.apps import AppConfig
 
 
-class CauseConfig(AppConfig):
+class CausesConfig(AppConfig):
     default_auto_field = 'django.db.models.BigAutoField'
-    name = 'cause'
+    name = 'causes'

@@ -35,11 +35,10 @@ DJANGO_APPS = [
     "django.contrib.contenttypes",
     "django.contrib.sessions",
     "django.contrib.messages",
-    "django.contrib.staticfiles",
-    "cause"
+    "django.contrib.staticfiles"
 ]
 
-MY_APPS = []
+MY_APPS = ["causes"]
 
 THIRD_PARTY_APPS = ["rest_framework", "rest_framework.authtoken"]
 
