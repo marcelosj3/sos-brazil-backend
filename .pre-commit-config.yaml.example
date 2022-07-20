@@ -1,0 +1,14 @@
+# Run `pre-commit install` to use this hook
+
+repos:
+  - repo: https://github.com/PyCQA/isort
+    rev: 5.10.1
+    hooks:
+      - id: isort
+        language_version: python3.9.6 # Your python version (python --version)
+
+  - repo: https://github.com/ambv/black
+    rev: 22.6.0
+    hooks:
+      - id: black
+        language_version: python3.9.6 # Your python version (python --version)
