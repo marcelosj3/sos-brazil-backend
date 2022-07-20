@@ -4,7 +4,7 @@ from django.db import models
 
 
 class Campaign(models.Model):
-    id = models.UUIDField(primary_key=True, default=uuid4, editable=False)
+    campaign_id = models.UUIDField(primary_key=True, default=uuid4, editable=False)
     name = models.CharField(max_length=50)
     description = models.CharField(max_length=255)
     collected = models.FloatField()
@@ -15,3 +15,5 @@ class Campaign(models.Model):
     end_date = models.DateField()
 
     # ong = models.ManyToOneRel()  #TODO ForeignKey
+
+    id = None
