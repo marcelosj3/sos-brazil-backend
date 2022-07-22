@@ -6,18 +6,16 @@ from ongs.serializers import OngSerializer
 
 from .models import Ong
 
-# Create your views here.
-
 
 class OngView(APIView):
     def get(self, _: Request):
         ongs = Ong.objects.all()
         serialized = OngSerializer(instance=ongs, many=True)
-        return Response({ongs: serialized.data}, status.HTTP_200_OK)
+        return Response({"ongs": serialized.data}, status.HTTP_200_OK)
 
 
 class OngIdView(APIView):
-    def get(self, _: Request, ong_id: int):
+    def get(self, _: Request, ong_id: str):
         try:
             ong = get_object_or_404(Ong, pk=ong_id)
             serialize = OngSerializer(ong)
