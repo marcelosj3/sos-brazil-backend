@@ -24,3 +24,20 @@ class OngIdView(APIView):
             return Response(serialize.data, status.HTTP_200_OK)
         except Http404:
             return Response({"Error": "Ong Not Found"}, status.HTTP_404_NOT_FOUND)
+
+    def patch(self, request: Request, ong_id):
+        ong = get_object_or_404(Ong, pk=ong_id)
+
+        serialized = OngSerializer(instance=ong, data=request.data)
+        serialized.is_valid(raise_exception=True)
+        serialized.save()
+
+        return Response(serialized.data, status.HTTP_200_OK)
+
+    def delete(self, response: Response, ong_id):
+        ong = get_object_or_404(Ong, pk=ong_id)
+
+        ong.delete()
+
+        return Response("", status.HTTP_204_NO_CONTENT)
+        
