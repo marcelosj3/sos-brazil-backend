@@ -20,5 +20,5 @@ urlpatterns = [
     path("admin/", admin.site.urls),
     path("api/", include("campaigns.urls")),
     path("api/", include("ongs.urls")),
-    # path("api/", include("users.urls")),
+    path("api/", include("users.urls")),
 ]
