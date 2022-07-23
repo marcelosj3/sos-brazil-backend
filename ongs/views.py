@@ -1,5 +1,6 @@
 from django.http import Http404
 from django.shortcuts import get_object_or_404
+from rest_framework.authentication import TokenAuthentication
 from rest_framework.views import APIView, Request, Response, status
 
 from ongs.serializers import OngSerializer
@@ -10,10 +11,18 @@ from .models import Ong
 
 
 class OngView(APIView):
+    authentication_classes = [TokenAuthentication]
+
     def get(self, _: Request):
         ongs = Ong.objects.all()
         serialized = OngSerializer(instance=ongs, many=True)
         return Response({ongs: serialized.data}, status.HTTP_200_OK)
+
+    def post(self, request: Request):
+        serialized = OngSerializer(data=request.data)
+        serialized.is_valid()
+        serialized.save()
+        return Response(serialized.data, status.HTTP_201_CREATED)
 
 
 class OngIdView(APIView):
@@ -40,4 +49,3 @@ class OngIdView(APIView):
         ong.delete()
 
         return Response("", status.HTTP_204_NO_CONTENT)
-        
