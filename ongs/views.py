@@ -19,9 +19,10 @@ class OngView(APIView):
 
     def post(self, request: Request):
         serialized = OngSerializer(data=request.data)
-        serialized.is_valid()
+        serialized.is_valid(raise_exception=True)
         serialized.save()
         return Response(serialized.data, status.HTTP_201_CREATED)
+
 
 class OngIdView(APIView):
     def get(self, _: Request, ong_id: str):
@@ -44,7 +45,7 @@ class OngIdView(APIView):
             serialized.save()
 
             return Response(serialized.data, status.HTTP_200_OK)
-        
+
         except ValidationError as err:
             return Response({"error": err}, status.HTTP_422_UNPROCESSABLE_ENTITY)
 
