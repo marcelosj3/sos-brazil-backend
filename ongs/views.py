@@ -35,7 +35,7 @@ class OngIdView(APIView):
     def patch(self, request: Request, ong_id):
         ong = get_object_or_404(Ong, pk=ong_id)
 
-        serialized = OngSerializer(instance=ong, data=request.data)
+        serialized = OngSerializer(instance=ong, data=request.data, partial=True)
         serialized.is_valid(raise_exception=True)
         serialized.save()
 
