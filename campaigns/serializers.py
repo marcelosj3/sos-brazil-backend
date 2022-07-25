@@ -1,10 +1,13 @@
-from ongs.serializers import OngSerializer
 from rest_framework import serializers
 
 from .models import Campaign, Donation
 
 
 class CampaignSerializer(serializers.Serializer):
+    ong_id = serializers.PrimaryKeyRelatedField(
+        read_only=True,
+        source='ong',
+    )
     campaign_id = serializers.UUIDField(read_only=True)
 
     name = serializers.CharField(max_length=50)
@@ -16,18 +19,35 @@ class CampaignSerializer(serializers.Serializer):
     start_date = serializers.DateField()
     end_date = serializers.DateField()
 
-    ong_id = OngSerializer(read_only=True)
-
     def create(self, validated_data: dict):
         campaign = Campaign.objects.create(**validated_data)
 
         return campaign
 
+    def update(self, instance, validated_data):
+        for key, value in validated_data.items():
+            setattr(instance, key, value)
 
-class DonationSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Donation
-        fields = "__all__"
+        instance.save()
+
+        return instance
+
+
+class DonationSerializer(serializers.Serializer):
+    ong_id = serializers.PrimaryKeyRelatedField(
+        read_only=True,
+        source="campaign.ong",
+    )
+    campaign_id = serializers.PrimaryKeyRelatedField(
+        read_only=True,
+        source="campaign",
+    )
+    donation_id = serializers.UUIDField(read_only=True)
+    user_id = serializers.PrimaryKeyRelatedField(
+        read_only=True,
+        source="user",
+    )
+    value = serializers.FloatField()
 
     def create(self, validated_data: dict):
         donation = Donation.objects.create(**validated_data)
