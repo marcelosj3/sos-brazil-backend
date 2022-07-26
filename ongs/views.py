@@ -2,6 +2,7 @@ from django.core.exceptions import ValidationError
 from django.http import Http404
 from django.shortcuts import get_object_or_404
 from rest_framework.authentication import TokenAuthentication
+from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
 from rest_framework.views import APIView, Request, Response, status
 
 from ongs.permissions import isOngOwner
@@ -11,11 +12,12 @@ from .models import Ong
 
 
 class OngView(APIView):
-    # authentication_classes = [TokenAuthentication]
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticatedOrReadOnly]
 
     def post(self, request: Request):
-        # print(request)
-        serialized = OngSerializer(data=request.data)
+        request.data["causes"] = [{"name": cause} for cause in request.data["causes"]]
+        serialized = OngSerializer(data=request.data, context={"request": request})
         serialized.is_valid(raise_exception=True)
         serialized.save()
         return Response(serialized.data, status.HTTP_201_CREATED)

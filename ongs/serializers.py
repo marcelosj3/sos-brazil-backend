@@ -1,9 +1,12 @@
+from urllib import request
+
 from rest_framework import serializers
 
 from causes.models import Cause
 from causes.serializers import CauseSerializer
 from ongs.models import Ong
-from users.serializers import UserOngAdminSerializer
+from users.models import User
+from users.serializers import UserOngAdminSerializer, UserSerializer
 
 
 class OngSerializer(serializers.ModelSerializer):
@@ -24,10 +27,12 @@ class OngSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data: dict):
         causes = validated_data.pop("causes")
+        admin = self.context["request"].user
         ong = Ong.objects.create(**validated_data)
         for cause in causes:
             cause, _ = Cause.objects.get_or_create(**cause)
             ong.causes.add(cause)
+        ong.admins.add(admin)
         return ong
 
     def update(self, instance: Ong, validated_data: dict):
