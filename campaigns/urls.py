@@ -1,12 +1,7 @@
 from django.urls import path
 
-from .views import (
-    CampaignIdView,
-    CampaignView,
-    DonationView,
-    # EndCampaignView,
-    OngCampaignView,
-)
+from .views import CampaignView  # EndCampaignView,
+from .views import CampaignIdView, DonationView, OngCampaignView
 
 urlpatterns = [
     path("ongs/<str:ong_id>/campaigns/", OngCampaignView.as_view()),
