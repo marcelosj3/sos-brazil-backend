@@ -60,8 +60,15 @@ class UserSerializer(serializers.ModelSerializer):
         """
         This function checks for an "password = True" property in the view
         in order to properly go on with the logic, if the view that requested
-        the update does not have this property, it will raise an error
+        the update does not have this property, it returns a False value.
         """
+        update_password_view = self.context["view"].__class__.__dict__.get(
+            "password", False
+        )
+
+        if not update_password_view:
+            validated_data.pop("password", False)
+            return False
 
         password = validated_data.get("password", None)
         old_password = self.context["request"]._data.get("old_password", None)
@@ -85,14 +92,11 @@ class UserSerializer(serializers.ModelSerializer):
     def update(self, instance: User, validated_data: dict):
         user: User = self.context["request"].user
 
-        update_password_view = self.context["view"].__class__.__dict__.get(
-            "password", False
-        )
+        updated_password_instance = self.update_password(user, instance, validated_data)
 
-        if update_password_view:
-            return self.update_password(user, instance, validated_data)
+        if updated_password_instance:
+            return updated_password_instance
 
-        validated_data.pop("password", False)
         is_staff = validated_data.pop("is_staff", False)
         is_superuser = validated_data.pop("is_superuser", False)
 
