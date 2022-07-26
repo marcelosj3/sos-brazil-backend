@@ -1,9 +1,14 @@
 from rest_framework import serializers
 
+from causes.models import Cause
+from causes.serializers import CauseSerializer
 from ongs.models import Ong
+from users.serializers import UserOngAdminSerializer
 
 
 class OngSerializer(serializers.ModelSerializer):
+    causes = CauseSerializer(many=True)
+
     class Meta:
         model = Ong
         fields = [
@@ -14,11 +19,16 @@ class OngSerializer(serializers.ModelSerializer):
             "site_address",
             "logo",
             "created_at",
+            "causes",
         ]
 
-    # TODO: add relations in serializers
     def create(self, validated_data: dict):
-        return Ong.objects.create(**validated_data)
+        causes = validated_data.pop("causes")
+        ong = Ong.objects.create(**validated_data)
+        for cause in causes:
+            cause, _ = Cause.objects.get_or_create(**cause)
+            ong.causes.add(cause)
+        return ong
 
     def update(self, instance: Ong, validated_data: dict):
         instance.name = validated_data.get("name", instance.name)
@@ -29,3 +39,15 @@ class OngSerializer(serializers.ModelSerializer):
         instance.logo = validated_data.get("logo", instance.logo)
         instance.save()
         return instance
+
+
+class OngPatchSerializer(serializers.Serializer):
+    admins = UserOngAdminSerializer(many=True)
+
+    class Meta:
+        model = Ong
+        fields = ["admins"]
+
+    def update(self, instance: Ong, validated_data: dict):
+        instance.admins = validated_data.get("admins", instance.name)
+        return super().update(instance, validated_data)

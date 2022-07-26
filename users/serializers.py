@@ -1,3 +1,5 @@
+from dataclasses import fields
+
 from django.contrib.auth.hashers import make_password
 from rest_framework import serializers
 from rest_framework.authentication import authenticate
@@ -28,6 +30,12 @@ class UserLoginSerializer(serializers.Serializer):
         attributes["user"] = user
 
         return attributes
+
+
+class UserOngAdminSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ["user_id"]
 
 
 class UserSerializer(serializers.ModelSerializer):
