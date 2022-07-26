@@ -1,3 +1,4 @@
+from typing import OrderedDict
 from django.contrib.auth.hashers import check_password, make_password
 from rest_framework import serializers
 from rest_framework.authentication import authenticate
@@ -11,7 +12,7 @@ class UserLoginSerializer(serializers.Serializer):
     email = serializers.EmailField()
     password = serializers.CharField()
 
-    def validate(self, attributes):
+    def validate(self, attributes: dict):
         email = attributes.get("email", None)
         password = attributes.get("password", None)
 
@@ -48,15 +49,15 @@ class UserSerializer(serializers.ModelSerializer):
             "password": {"write_only": True},
         }
 
-    def create(self, validated_data: dict):
+    def create(self, validated_data: OrderedDict):
         return User.objects.create_user(**validated_data)
 
-    def save_password(self, instance, password):
+    def save_password(self, instance: User, password: str):
         setattr(instance, "password", make_password(password))
         instance.save()
         return instance
 
-    def update_password(self, user: User, instance: User, validated_data: dict):
+    def update_password(self, user: User, instance: User, validated_data: OrderedDict):
         """
         This function checks for an "password = True" property in the view
         in order to properly go on with the logic, if the view that requested
@@ -89,7 +90,7 @@ class UserSerializer(serializers.ModelSerializer):
 
         return self.save_password(instance, password)
 
-    def update(self, instance: User, validated_data: dict):
+    def update(self, instance: User, validated_data: OrderedDict):
         user: User = self.context["request"].user
 
         updated_password_instance = self.update_password(user, instance, validated_data)
