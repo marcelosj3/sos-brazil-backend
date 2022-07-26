@@ -2,9 +2,8 @@ from django.urls import path
 
 from .views import (
     CampaignIdView,
-    CampaignView,
+    CampaignView,  # EndCampaignView,
     DonationView,
-    # EndCampaignView,
     OngCampaignView,
 )
 

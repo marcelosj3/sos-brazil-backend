@@ -1,4 +1,3 @@
-from django.contrib.auth.hashers import make_password
 from rest_framework import serializers
 from rest_framework.authentication import authenticate
 
@@ -63,9 +62,6 @@ class UserSerializer(serializers.ModelSerializer):
             validated_data.setdefault("is_superuser", is_superuser)
 
         for key, value in validated_data.items():
-            if key == "password":
-                value = make_password(value)
-
             setattr(instance, key, value)
 
         instance.save()
