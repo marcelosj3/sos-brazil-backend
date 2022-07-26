@@ -4,7 +4,6 @@ from django.shortcuts import get_object_or_404
 from django.core.exceptions import ValidationError
 from ongs.models import Ong
 from rest_framework.authentication import TokenAuthentication
-from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView, Request, Response, status
 
 from campaigns.permissions import CampaignPermission
@@ -15,7 +14,7 @@ from .models import Campaign
 
 class OngCampaignView(APIView):
     authentication_classes = [TokenAuthentication]
-    permission_classes = [IsAuthenticated]
+    permission_classes = [CampaignPermission]
 
     def post(self, request: Request, ong_id: str):
         try:
