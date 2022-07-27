@@ -1,12 +1,12 @@
 from urllib import request
 
-from rest_framework import serializers
-
 from causes.models import Cause
 from causes.serializers import CauseSerializer
-from ongs.models import Ong
+from rest_framework import serializers
 from users.models import User
 from users.serializers import UserOngAdminSerializer, UserSerializer
+
+from ongs.models import Ong
 
 
 class OngSerializer(serializers.ModelSerializer):
@@ -55,10 +55,6 @@ class OngPatchSerializer(serializers.Serializer):
 
     def update(self, instance: Ong, _: dict):
         admins = self.context["request"].data
-        # print()
-        # print(self.context["request"].user.__dict__["user_id"] in instance.admins.values())
-        # # print(instance.admins.values()[0]["user_id"])
-        # print()
         for admin in admins["admins"]:
             instance.admins.add(admin["user_id"])
         instance.save()
