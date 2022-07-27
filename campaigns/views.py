@@ -73,6 +73,20 @@ class CampaignIdView(APIView):
         return Response("", status.HTTP_204_NO_CONTENT)
 
 
+    def patch(self, request: Request, campaign_id: str):
+        try:
+            campaign = get_object_or_404(Campaign, pk=campaign_id)
+
+            serialized = CampaignSerializer(instance=campaign, data=request.data, partial=True)
+            serialized.is_valid(raise_exception=True)
+            serialized.save()
+
+            return Response(serialized.data, status.HTTP_200_OK)
+
+        except ValidationError as err:
+            return Response({"error": err}, status.HTTP_422_UNPROCESSABLE_ENTITY)
+
+
 class DonationView(APIView):
     authentication_classes = [TokenAuthentication]
     permission_classes = [CampaignPermission]
