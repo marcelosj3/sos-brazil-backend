@@ -1,13 +1,13 @@
-<<<<<<< HEAD
-from dataclasses import fields
+from typing import OrderedDict
 
-from django.contrib.auth.hashers import make_password
-=======
->>>>>>> 7c9b59228a0695eac556749ce172ff3067cc8ca9
+from django.contrib.auth.hashers import check_password, make_password
 from rest_framework import serializers
 from rest_framework.authentication import authenticate
-
-from sos_brazil.exceptions import InvalidCredentialsException, InvalidKeyException
+from sos_brazil.exceptions import (
+    InvalidCredentialsException,
+    InvalidKeyException,
+    MissingKeyException,
+)
 
 from .models import User
 
@@ -16,7 +16,7 @@ class UserLoginSerializer(serializers.Serializer):
     email = serializers.EmailField()
     password = serializers.CharField()
 
-    def validate(self, attributes):
+    def validate(self, attributes: dict):
         email = attributes.get("email", None)
         password = attributes.get("password", None)
 
@@ -55,13 +55,57 @@ class UserSerializer(serializers.ModelSerializer):
             "is_active",
         ]
 
-        extra_kwargs = {"password": {"write_only": True}}
+        extra_kwargs = {
+            "password": {"write_only": True},
+        }
 
-    def create(self, validated_data: dict):
+    def create(self, validated_data: OrderedDict):
         return User.objects.create_user(**validated_data)
 
-    def update(self, instance: User, validated_data: dict):
+    def save_password(self, instance: User, password: str):
+        setattr(instance, "password", make_password(password))
+        instance.save()
+        return instance
+
+    def update_password(self, user: User, instance: User, validated_data: OrderedDict):
+        """
+        This function checks for an "password = True" property in the view
+        in order to properly go on with the logic, if the view that requested
+        the update does not have this property, it returns a False value.
+        """
+        update_password_view = self.context["view"].__class__.__dict__.get(
+            "password", False
+        )
+
+        if not update_password_view:
+            return False
+
+        password = validated_data.get("password", None)
+        old_password = self.context["request"]._data.get("old_password", None)
+
+        is_superuser = user.__dict__.get("is_superuser", None)
+
+        if is_superuser and password:
+            return self.save_password(instance, password)
+
+        if not old_password:
+            raise MissingKeyException(
+                "old_password",
+                "in order to update the 'password', an 'old_password' key is necessary.",
+            )
+
+        if not check_password(old_password, user.password):
+            raise InvalidCredentialsException()
+
+        return self.save_password(instance, password)
+
+    def update(self, instance: User, validated_data: OrderedDict):
         user: User = self.context["request"].user
+
+        updated_password_instance = self.update_password(user, instance, validated_data)
+
+        if updated_password_instance:
+            return updated_password_instance
 
         if validated_data.get("password", None):
             raise InvalidKeyException(key="password")
