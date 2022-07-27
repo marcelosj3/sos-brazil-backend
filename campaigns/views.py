@@ -2,6 +2,7 @@ from datetime import date
 
 from django.http import Http404
 from django.shortcuts import get_object_or_404
+from django.core.exceptions import ValidationError
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.views import APIView, Request, Response, status
 
@@ -58,6 +59,18 @@ class CampaignIdView(APIView):
             return Response(
                 {"details": "Campaign not found."}, status.HTTP_404_NOT_FOUND
             )
+
+        
+    def delete(self, response: Response, campaign_id: str):
+        try:
+            find_campaign = get_object_or_404(Campaign, pk=campaign_id)
+
+        except ValidationError as err:
+            return Response({"error": err}, status.HTTP_422_UNPROCESSABLE_ENTITY)
+
+        find_campaign.delete()
+
+        return Response("", status.HTTP_204_NO_CONTENT)
 
 
 class DonationView(APIView):
