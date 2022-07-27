@@ -6,7 +6,7 @@ from .models import Campaign, Donation
 class CampaignSerializer(serializers.Serializer):
     ong_id = serializers.PrimaryKeyRelatedField(
         read_only=True,
-        source='ong',
+        source="ong",
     )
     campaign_id = serializers.UUIDField(read_only=True)
 
