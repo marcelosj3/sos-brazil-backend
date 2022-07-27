@@ -1,10 +1,7 @@
-from urllib import request
-
 from causes.models import Cause
 from causes.serializers import CauseSerializer
 from rest_framework import serializers
-from users.models import User
-from users.serializers import UserOngAdminSerializer, UserSerializer
+from users.serializers import UserOngAdminSerializer
 
 from ongs.models import Ong
 
