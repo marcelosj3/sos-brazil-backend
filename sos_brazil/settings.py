@@ -151,3 +151,5 @@ if DATABASE_URL:
     DATABASES["default"].update(db_from_env)
 
     DEBUG = False
+
+DATE_INPUT_FORMATS = ['%d/%m/%Y']
