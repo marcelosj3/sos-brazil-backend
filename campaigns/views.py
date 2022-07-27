@@ -1,12 +1,12 @@
 from django.core.exceptions import ValidationError
 from django.http import Http404
 from django.shortcuts import get_object_or_404
+from ongs.models import Ong
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.views import APIView, Request, Response, status
 
 from campaigns.permissions import CampaignPermission
 from campaigns.serializers import CampaignSerializer, DonationSerializer
-from ongs.models import Ong
 
 from .models import Campaign
 
@@ -69,12 +69,13 @@ class CampaignIdView(APIView):
 
         return Response("", status.HTTP_204_NO_CONTENT)
 
-
     def patch(self, request: Request, campaign_id: str):
         try:
             campaign = get_object_or_404(Campaign, pk=campaign_id)
 
-            serialized = CampaignSerializer(instance=campaign, data=request.data, partial=True)
+            serialized = CampaignSerializer(
+                instance=campaign, data=request.data, partial=True
+            )
             serialized.is_valid(raise_exception=True)
             serialized.save()
 

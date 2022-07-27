@@ -3,7 +3,6 @@ from typing import OrderedDict
 from django.contrib.auth.hashers import check_password, make_password
 from rest_framework import serializers
 from rest_framework.authentication import authenticate
-
 from sos_brazil.exceptions import (
     InvalidCredentialsException,
     InvalidKeyException,
@@ -34,6 +33,12 @@ class UserLoginSerializer(serializers.Serializer):
         attributes["user"] = user
 
         return attributes
+
+
+class UserOngAdminSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ["user_id"]
 
 
 class UserSerializer(serializers.ModelSerializer):
