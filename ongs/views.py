@@ -2,7 +2,7 @@ from django.core.exceptions import ValidationError
 from django.http import Http404
 from django.shortcuts import get_object_or_404
 from rest_framework.authentication import TokenAuthentication
-from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
+from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from rest_framework.views import APIView, Request, Response, status
 
 from ongs.permissions import isOngOwner
@@ -30,12 +30,12 @@ class OngView(APIView):
 
 class OngIdView(APIView):
     authentication_classes = [TokenAuthentication]
-    permission_classes = [isOngOwner]
+    permission_classes = [IsAuthenticatedOrReadOnly, isOngOwner]
 
     def patch(self, request: Request, ong_id):
         try:
             ong = get_object_or_404(Ong, pk=ong_id)
-
+            self.check_object_permissions(request, ong)
             serialized = OngSerializer(instance=ong, data=request.data, partial=True)
             serialized.is_valid(raise_exception=True)
             serialized.save()
@@ -58,10 +58,10 @@ class OngIdView(APIView):
         except ValidationError as err:
             return Response({"error": err}, status.HTTP_422_UNPROCESSABLE_ENTITY)
 
-    def delete(self, _: Response, ong_id):
+    def delete(self, request: Request, ong_id):
         try:
             ong = get_object_or_404(Ong, pk=ong_id)
-
+            self.check_object_permissions(request, ong)
             ong.delete()
 
             return Response("", status.HTTP_204_NO_CONTENT)
@@ -78,8 +78,14 @@ class OngIdRegisterAdmin(APIView):
 
     def patch(self, request: Request, ong_id: str):
         try:
+            request.data["admins"] = [
+                {"user_id": user_id} for user_id in request.data["admins"]
+            ]
             ong = get_object_or_404(Ong, pk=ong_id)
-            serialized = OngPatchSerializer(instance=ong, data=request.data)
+            self.check_object_permissions(request, ong)
+            serialized = OngPatchSerializer(
+                instance=ong, data=request.data, context={"request": request}
+            )
             serialized.is_valid(raise_exception=True)
             serialized.save()
             return Response(serialized.data, status.HTTP_200_OK)

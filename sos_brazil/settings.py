@@ -50,7 +50,7 @@ MY_APPS = ["campaigns", "causes", "ongs", "users"]
 THIRD_PARTY_APPS = ["rest_framework", "rest_framework.authtoken"]
 
 INSTALLED_APPS = DJANGO_APPS + MY_APPS + THIRD_PARTY_APPS
-# project_base/settings.py
+
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
         "rest_framework.authentication.TokenAuthentication",

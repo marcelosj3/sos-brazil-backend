@@ -53,6 +53,14 @@ class OngPatchSerializer(serializers.Serializer):
         model = Ong
         fields = ["admins"]
 
-    def update(self, instance: Ong, validated_data: dict):
-        instance.admins = validated_data.get("admins", instance.name)
-        return super().update(instance, validated_data)
+    def update(self, instance: Ong, _: dict):
+        admins = self.context["request"].data
+        # print()
+        # print(self.context["request"].user.__dict__["user_id"] in instance.admins.values())
+        # # print(instance.admins.values()[0]["user_id"])
+        # print()
+        for admin in admins["admins"]:
+            instance.admins.add(admin["user_id"])
+        instance.save()
+
+        return instance
