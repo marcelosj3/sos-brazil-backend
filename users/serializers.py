@@ -1,8 +1,7 @@
-from django.contrib.auth.hashers import make_password
 from rest_framework import serializers
 from rest_framework.authentication import authenticate
 
-from sos_brazil.exceptions import InvalidCredentialsException
+from sos_brazil.exceptions import InvalidCredentialsException, InvalidKeyException
 
 from .models import User
 
@@ -52,6 +51,9 @@ class UserSerializer(serializers.ModelSerializer):
     def update(self, instance: User, validated_data: dict):
         user: User = self.context["request"].user
 
+        if validated_data.get("password", None):
+            raise InvalidKeyException(key="password")
+
         is_staff = validated_data.pop("is_staff", False)
         is_superuser = validated_data.pop("is_superuser", False)
 
@@ -60,9 +62,6 @@ class UserSerializer(serializers.ModelSerializer):
             validated_data.setdefault("is_superuser", is_superuser)
 
         for key, value in validated_data.items():
-            if key == "password":
-                value = make_password(value)
-
             setattr(instance, key, value)
 
         instance.save()
