@@ -19,7 +19,7 @@ class UserLoginView(ObtainAuthToken):
 
 class UserView(ListCreateAPIView):
     authentication_classes = [TokenAuthentication]
-    permission_classes = [IsAuthenticated, IsSuperuserListCreateUser]
+    permission_classes = [IsSuperuserListCreateUser]
 
     queryset = User.objects.all()
     serializer_class = UserSerializer

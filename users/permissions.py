@@ -4,7 +4,7 @@ from rest_framework.views import Request
 from users.models import User
 
 
-class IsSuperuserListCreateUser(BasePermission):
+class IsSuperuserListCreateUser(IsAuthenticated, BasePermission):
     """
     This permission is used to required authentication and
     superuser credentials in order to list all users. Regarding
