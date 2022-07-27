@@ -4,7 +4,7 @@ from rest_framework.views import Request
 from users.models import User
 
 
-class IsSuperuserListCreateUser(IsAuthenticated, BasePermission):
+class IsSuperuserListCreateUser(BasePermission):
     """
     This permission is used to required authentication and
     superuser credentials in order to list all users. Regarding
@@ -20,7 +20,7 @@ class IsSuperuserListCreateUser(IsAuthenticated, BasePermission):
         return bool(request.user.is_superuser and request.method == "GET")
 
 
-class IsSuperuserOrUser(IsAuthenticated, BasePermission):
+class IsSuperuserOrUser(BasePermission):
     def has_object_permission(self, request: Request, _, obj: User):
         if request.user.is_superuser:
             return True

@@ -1,8 +1,6 @@
-from datetime import date
-
+from django.core.exceptions import ValidationError
 from django.http import Http404
 from django.shortcuts import get_object_or_404
-from django.core.exceptions import ValidationError
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.views import APIView, Request, Response, status
 
@@ -60,7 +58,6 @@ class CampaignIdView(APIView):
                 {"details": "Campaign not found."}, status.HTTP_404_NOT_FOUND
             )
 
-        
     def delete(self, response: Response, campaign_id: str):
         try:
             find_campaign = get_object_or_404(Campaign, pk=campaign_id)
