@@ -1,9 +1,14 @@
 from typing import OrderedDict
+
 from django.contrib.auth.hashers import check_password, make_password
 from rest_framework import serializers
 from rest_framework.authentication import authenticate
 
-from sos_brazil.exceptions import InvalidCredentialsException, MissingKeyException
+from sos_brazil.exceptions import (
+    InvalidCredentialsException,
+    InvalidKeyException,
+    MissingKeyException,
+)
 
 from .models import User
 
@@ -68,7 +73,6 @@ class UserSerializer(serializers.ModelSerializer):
         )
 
         if not update_password_view:
-            validated_data.pop("password", False)
             return False
 
         password = validated_data.get("password", None)
@@ -98,6 +102,9 @@ class UserSerializer(serializers.ModelSerializer):
         if updated_password_instance:
             return updated_password_instance
 
+        if validated_data.get("password", None):
+            raise InvalidKeyException(key="password")
+
         is_staff = validated_data.pop("is_staff", False)
         is_superuser = validated_data.pop("is_superuser", False)
 
@@ -106,9 +113,6 @@ class UserSerializer(serializers.ModelSerializer):
             validated_data.setdefault("is_superuser", is_superuser)
 
         for key, value in validated_data.items():
-            if key == "password":
-                value = make_password(value)
-
             setattr(instance, key, value)
 
         instance.save()
