@@ -20,7 +20,7 @@ class IsSuperuserListCreateUser(IsAuthenticated, BasePermission):
         return bool(request.user.is_superuser and request.method == "GET")
 
 
-class IsSuperuserOrUser(IsAuthenticated, BasePermission):
+class IsSuperuserOrUser(BasePermission):
     def has_object_permission(self, request: Request, _, obj: User):
         if request.user.is_superuser:
             return True
