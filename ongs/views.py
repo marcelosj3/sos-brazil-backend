@@ -4,10 +4,10 @@ from django.shortcuts import get_object_or_404
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from rest_framework.views import APIView, Request, Response, status
+from sos_brazil.exceptions import KeyTypeError, MissingKeyException
 
 from ongs.permissions import IsOngOwner
 from ongs.serializers import OngPatchSerializer, OngSerializer
-from sos_brazil.exceptions import MissingKeyException
 
 from .models import Ong
 
@@ -23,8 +23,7 @@ class OngView(APIView):
             raise MissingKeyException("causes", "This field is required.")
 
         if not isinstance(causes, list):
-            # TODO create an exception to handle this properly
-            raise Exception("Not a valid list of strings.")
+            raise KeyTypeError(key="causes", message="Expect a list of items")
 
         request.data["causes"] = [{"name": cause} for cause in request.data["causes"]]
         serialized = OngSerializer(data=request.data, context={"request": request})
@@ -46,7 +45,10 @@ class OngIdView(APIView):
         try:
             ong = get_object_or_404(Ong, pk=ong_id)
             self.check_object_permissions(request, ong)
-            if request.data.get("causes", None):
+            causes = request.data.get("causes", False)
+            if causes:
+                if not isinstance(causes, list):
+                    raise KeyTypeError(key="causes", message="Expect a list of items")
                 request.data["causes"] = [
                     {"name": cause} for cause in request.data["causes"]
                 ]

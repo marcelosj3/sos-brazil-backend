@@ -59,3 +59,19 @@ class InvalidFormatException(APIException):
 
         self.detail = messages
         self.status_code = status_code
+
+
+class KeyTypeError(APIException):
+    default_detail = "Expected a list of items"
+
+    def __init__(
+        self,
+        key: str,
+        message: str,
+        status_code: int = status.HTTP_400_BAD_REQUEST,
+        *args,
+        **kwargs,
+    ):
+        super().__init__(*args, **kwargs)
+        self.detail = {key.lower(): message}
+        self.status_code = status_code
