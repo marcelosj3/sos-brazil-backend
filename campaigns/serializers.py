@@ -1,4 +1,5 @@
 from rest_framework import serializers
+from django.core.exceptions import ValidationError
 
 from .models import Campaign, Donation
 
@@ -18,6 +19,12 @@ class CampaignSerializer(serializers.Serializer):
     is_active = serializers.BooleanField(required=False)
     start_date = serializers.DateField()
     end_date = serializers.DateField()
+
+    def validate_goal(self, value):
+        if(value <= 0):
+            raise ValidationError({"details": "Goal field has to be higher than 0"})
+
+        return value
 
     def create(self, validated_data: dict):
         campaign = Campaign.objects.create(**validated_data)

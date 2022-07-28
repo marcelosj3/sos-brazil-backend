@@ -29,7 +29,7 @@ class OngCampaignView(APIView):
             return Response({"details": "Ong not found."}, status.HTTP_404_NOT_FOUND)
 
         except ValidationError as err:
-            return Response({"error": err.args}, status.HTTP_400_BAD_REQUEST)
+            return Response(err, status.HTTP_400_BAD_REQUEST)
 
     def get(self, _: Request, ong_id: str):
         campaigns = Campaign.objects.filter(ong_id=ong_id)
@@ -67,6 +67,9 @@ class CampaignIdView(APIView):
 
         except ValidationError as err:
             return Response({"error": err}, status.HTTP_422_UNPROCESSABLE_ENTITY)
+
+        if(find_campaign.collected > 0):
+            return Response({"error": "Collected field has to be 0 or lower"}, status.HTTP_403_FORBIDDEN)
 
         find_campaign.delete()
 
