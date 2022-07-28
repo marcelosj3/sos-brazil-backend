@@ -22,9 +22,12 @@ class CampaignSerializer(serializers.Serializer):
 
     def validate_goal(self, value):
         if(value <= 0):
-            raise ValidationError({"details": "Goal field has to be higher than 0"})
+            raise ValidationError({
+                "details": "Goal value has to be higher than 0"
+            })
 
         return value
+
 
     def create(self, validated_data: dict):
         campaign = Campaign.objects.create(**validated_data)
