@@ -4,7 +4,7 @@ from rest_framework.views import Request
 from ongs.models import Ong
 
 
-class isOngOwner(BasePermission):
+class IsOngOwner(BasePermission):
     def has_permission(self, request, _):
         admin_methods = {"POST", "PATCH", "DELETE"}
         if request.method in admin_methods:
