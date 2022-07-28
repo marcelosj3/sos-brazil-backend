@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from sos_brazil.exceptions import GoalValueException
+from sos_brazil.exceptions import CampaignDateException, GoalValueException
 from sos_brazil.settings import DATE_INPUT_FORMATS
 
 from campaigns.utils import check_dates
@@ -42,6 +42,13 @@ class CampaignSerializer(serializers.Serializer):
     def update(self, instance, validated_data):
         non_updatable_keys = ["collected", "goal_reached"]
         wrong_keys = []
+        start_date = validated_data.get("start_date", instance.start_date)
+        end_date = validated_data.get("end_date", instance.end_date)
+
+        if start_date >= end_date:
+            raise CampaignDateException()
+
+        check_dates(start_date, end_date)
 
         for key in validated_data.keys():
             if key in non_updatable_keys:
