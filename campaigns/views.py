@@ -84,6 +84,9 @@ class CampaignIdView(APIView):
         except ValidationError as err:
             return Response({"error": err}, status.HTTP_422_UNPROCESSABLE_ENTITY)
 
+        except KeyError as err:
+            return Response({"error": err.args[0]}, status.HTTP_400_BAD_REQUEST)
+
 
 class DonationView(APIView):
     authentication_classes = [TokenAuthentication]
