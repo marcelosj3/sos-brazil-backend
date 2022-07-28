@@ -1,3 +1,5 @@
+from typing import OrderedDict
+
 from rest_framework import serializers
 
 from sos_brazil.exceptions import GoalValueException
@@ -33,7 +35,23 @@ class CampaignSerializer(serializers.Serializer):
 
         return campaign
 
-    def update(self, instance, validated_data):
+    def end_campaign(self, instance: Campaign, validated_data: OrderedDict):
+        is_end_campaign_view = self.context == "end_campaign"
+
+        if not is_end_campaign_view:
+            return False
+
+        for key, value in validated_data.items():
+            setattr(instance, key, value)
+
+        instance.save()
+
+        return instance
+
+    def update(self, instance: Campaign, validated_data: OrderedDict):
+        if self.end_campaign(instance, validated_data):
+            return instance
+
         non_updatable_keys = ["collected", "goal_reached"]
         wrong_keys = []
 
