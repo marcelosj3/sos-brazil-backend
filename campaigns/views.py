@@ -14,8 +14,8 @@ from .models import Campaign
 
 
 class OngCampaignView(APIView):
-    authentication_classes = [TokenAuthentication]
-    permission_classes = [CampaignPermission]
+    # authentication_classes = [TokenAuthentication]
+    # permission_classes = [CampaignPermission]
 
     def post(self, request: Request, ong_id: str):
         try:
@@ -29,6 +29,9 @@ class OngCampaignView(APIView):
 
         except Http404:
             return Response({"details": "Ong not found."}, status.HTTP_404_NOT_FOUND)
+
+        except ValidationError as err:
+            return Response({"error": err.args}, status.HTTP_400_BAD_REQUEST)
 
     def get(self, _: Request, ong_id: str):
         campaigns = Campaign.objects.filter(ong_id=ong_id)
