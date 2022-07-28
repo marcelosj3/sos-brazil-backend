@@ -38,3 +38,19 @@ class InvalidKeyException(APIException):
 
         self.detail = f"{key.title()} cannot be updated."
         self.status_code = status_code
+
+
+class InvalidFormatException(APIException):
+    default_detail = "Invalid format."
+
+    def __init__(
+        self,
+        messages: dict,
+        status_code: int = status.HTTP_422_UNPROCESSABLE_ENTITY,
+        *args,
+        **kwargs,
+    ):
+        super().__init__(*args, **kwargs)
+
+        self.detail = messages
+        self.status_code = status_code
