@@ -12,8 +12,8 @@ from .models import Campaign
 
 
 class OngCampaignView(APIView):
-    # authentication_classes = [TokenAuthentication]
-    # permission_classes = [CampaignPermission]
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [CampaignPermission]
 
     def post(self, request: Request, ong_id: str):
         try:
