@@ -1,12 +1,14 @@
 from django.core.exceptions import ValidationError
 from django.http import Http404
 from django.shortcuts import get_object_or_404
+from django.utils import timezone
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from rest_framework.views import APIView, Request, Response, status
 
 from ongs.models import Ong
-from ongs.permissions import isOngOwner
+from ongs.permissions import IsOngOwner
+from sos_brazil.settings import DATE_INPUT_FORMATS
 
 from .models import Campaign
 from .permissions import CampaignPermission
@@ -15,11 +17,12 @@ from .serializers import CampaignSerializer, DonationSerializer
 
 class OngCampaignView(APIView):
     authentication_classes = [TokenAuthentication]
-    permission_classes = [CampaignPermission]
+    permission_classes = [IsAuthenticatedOrReadOnly, IsOngOwner]
 
     def post(self, request: Request, ong_id: str):
         try:
             ong = get_object_or_404(Ong, pk=ong_id)
+            self.check_object_permissions(request, ong)
 
             serialized = CampaignSerializer(data=request.data)
             serialized.is_valid(raise_exception=True)
@@ -48,7 +51,7 @@ class CampaignView(APIView):
 
 class CampaignIdView(APIView):
     authentication_classes = [TokenAuthentication]
-    permission_classes = [IsAuthenticatedOrReadOnly, isOngOwner]
+    permission_classes = [IsAuthenticatedOrReadOnly, IsOngOwner]
 
     def get(self, _: Request, campaign_id: str):
         try:
@@ -155,38 +158,34 @@ class DonationView(APIView):
             )
 
 
-# class EndCampaignView(APIView):
-#     authentication_classes = [TokenAuthentication]
-#     permission_classes = [CampaignPermission]
+class CampaignEndView(APIView):
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsOngOwner]
 
-#     def post(self, request: Request, campaign_id: str):
-#         try:
-#             campaign = get_object_or_404(Campaign, pk=campaign_id)
-#             ong = Ong.objects.get(pk=campaign.__dict__["ong_id"])
-#             user = request.user
+    def post(self, request: Request, campaign_id: str):
+        try:
+            campaign = get_object_or_404(Campaign, pk=campaign_id)
+            self.check_object_permissions(request, campaign.ong)
 
-#             if user in ong.admins or user.is_superuser:
-#                 updated_campaign = {
-#                     **campaign.__dict__,
-#                     "is_active": False,
-#                     "end_date": str(date.today()),
-#                 }
+            time_now = timezone.now().strftime(DATE_INPUT_FORMATS[0])
 
-#                 serialized = CampaignSerializer(
-#                     instance=campaign,
-#                     data=updated_campaign,
-#                 )
-#                 serialized.is_valid(raise_exception=True)
-#                 serialized.save()
+            updated_campaign = {
+                **campaign.__dict__,
+                "is_active": False,
+                "end_date": time_now,
+            }
 
-#                 return Response(serialized.data, status.HTTP_200_OK)
+            serialized = CampaignSerializer(
+                instance=campaign, data=updated_campaign, context="end_campaign"
+            )
 
-#             return Response(
-#                 {"detail": "You do not have permission to perform this action."},
-#                 status.HTTP_403_FORBIDDEN,
-#             )
+            serialized.is_valid(raise_exception=True)
+            serialized.save()
+            return Response(serialized.data, status.HTTP_200_OK)
 
-#         except Http404:
-#             return Response(
-#                 {"details": "Campaign not found."}, status.HTTP_404_NOT_FOUND
-#             )
+        except ValidationError as err:
+            return Response({"error": err}, status.HTTP_422_UNPROCESSABLE_ENTITY)
+        except Http404:
+            return Response(
+                {"details": "Campaign not found."}, status.HTTP_404_NOT_FOUND
+            )
