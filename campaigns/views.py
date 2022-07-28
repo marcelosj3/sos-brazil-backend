@@ -28,7 +28,6 @@ class OngCampaignView(APIView):
         except Http404:
             return Response({"details": "Ong not found."}, status.HTTP_404_NOT_FOUND)
 
-
     def get(self, _: Request, ong_id: str):
         campaigns = Campaign.objects.filter(ong_id=ong_id)
         serialized = CampaignSerializer(instance=campaigns, many=True)
@@ -66,9 +65,11 @@ class CampaignIdView(APIView):
         except ValidationError as err:
             return Response({"error": err}, status.HTTP_422_UNPROCESSABLE_ENTITY)
 
-
-        if(find_campaign.collected > 0):
-            return Response({"error": "Collected field has to be '0' to be deleted"}, status.HTTP_403_FORBIDDEN)
+        if find_campaign.collected > 0:
+            return Response(
+                {"error": "Collected field has to be '0' to be deleted"},
+                status.HTTP_403_FORBIDDEN,
+            )
 
         find_campaign.delete()
 
@@ -86,6 +87,8 @@ class CampaignIdView(APIView):
 
             return Response(serialized.data, status.HTTP_200_OK)
 
+        except ValidationError as err:
+            return Response({"error": err}, status.HTTP_422_UNPROCESSABLE_ENTITY)
         except KeyError as err:
             return Response({"error": err.args[0]}, status.HTTP_400_BAD_REQUEST)
 

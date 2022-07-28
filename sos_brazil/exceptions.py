@@ -44,6 +44,7 @@ class GoalValueException(APIException):
     status_code = status.HTTP_422_UNPROCESSABLE_ENTITY
     default_detail = "Goal value has to be higher than 0"
 
+
 class InvalidFormatException(APIException):
     default_detail = "Invalid format."
 
