@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from django.core.exceptions import ValidationError
+from sos_brazil.exceptions import GoalValueException
 
 from .models import Campaign, Donation
 
@@ -22,9 +22,7 @@ class CampaignSerializer(serializers.Serializer):
 
     def validate_goal(self, value):
         if(value <= 0):
-            raise ValidationError({
-                "details": "Goal value has to be higher than 0"
-            })
+            raise GoalValueException()
 
         return value
 

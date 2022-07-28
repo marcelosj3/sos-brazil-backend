@@ -71,26 +71,22 @@ class CampaignIdView(APIView):
 
 
         if(find_campaign.collected > 0):
-            return Response({"error": "Collected field has to be 0 or lower"}, status.HTTP_403_FORBIDDEN)
+            return Response({"error": "Collected field has to be '0' to be deleted"}, status.HTTP_403_FORBIDDEN)
 
         find_campaign.delete()
 
         return Response("", status.HTTP_204_NO_CONTENT)
 
     def patch(self, request: Request, campaign_id: str):
-        try:
-            campaign = get_object_or_404(Campaign, pk=campaign_id)
+        campaign = get_object_or_404(Campaign, pk=campaign_id)
 
-            serialized = CampaignSerializer(
-                instance=campaign, data=request.data, partial=True
-            )
-            serialized.is_valid(raise_exception=True)
-            serialized.save()
+        serialized = CampaignSerializer(
+            instance=campaign, data=request.data, partial=True
+        )
+        serialized.is_valid(raise_exception=True)
+        serialized.save()
 
-            return Response(serialized.data, status.HTTP_200_OK)
-
-        except ValidationError as err:
-            return Response({"error": err}, status.HTTP_422_UNPROCESSABLE_ENTITY)
+        return Response(serialized.data, status.HTTP_200_OK)
 
 
 class DonationView(APIView):

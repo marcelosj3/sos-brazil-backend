@@ -38,3 +38,8 @@ class InvalidKeyException(APIException):
 
         self.detail = f"{key.title()} cannot be updated."
         self.status_code = status_code
+
+
+class GoalValueException(APIException):
+    status_code = status.HTTP_422_UNPROCESSABLE_ENTITY
+    default_detail = "Goal value has to be higher than 0"
