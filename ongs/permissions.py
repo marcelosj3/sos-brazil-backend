@@ -13,6 +13,8 @@ class isOngOwner(BasePermission):
 
     def has_object_permission(self, request: Request, _, obj: Ong):
         owner_method = {"PATCH", "DELETE"}
+        if request.user.is_superuser:
+            return True
         for request.method in owner_method:
             authorized = False
 

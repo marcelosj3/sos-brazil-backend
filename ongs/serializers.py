@@ -33,8 +33,12 @@ class OngSerializer(serializers.ModelSerializer):
         return ong
 
     def update(self, instance: Ong, validated_data: dict):
+        # print()
+        # print(validated_data.get("causes", None))
+        # print()
         instance.name = validated_data.get("name", instance.name)
         instance.description = validated_data.get("description", instance.description)
+        instance.cnpj = validated_data.get("cnpj", instance.cnpj)
         instance.site_address = validated_data.get(
             "site_address", instance.site_address
         )
