@@ -40,6 +40,27 @@ class InvalidKeyException(APIException):
         self.status_code = status_code
 
 
+class GoalValueException(APIException):
+    status_code = status.HTTP_422_UNPROCESSABLE_ENTITY
+    default_detail = "Goal value has to be higher than 0"
+
+
+class InvalidFormatException(APIException):
+    default_detail = "Invalid format."
+
+    def __init__(
+        self,
+        messages: dict,
+        status_code: int = status.HTTP_422_UNPROCESSABLE_ENTITY,
+        *args,
+        **kwargs,
+    ):
+        super().__init__(*args, **kwargs)
+
+        self.detail = messages
+        self.status_code = status_code
+
+
 class KeyTypeError(APIException):
     default_detail = "Expected a list of items"
 

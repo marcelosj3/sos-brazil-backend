@@ -65,6 +65,12 @@ class CampaignIdView(APIView):
         except ValidationError as err:
             return Response({"error": err}, status.HTTP_422_UNPROCESSABLE_ENTITY)
 
+        if find_campaign.collected > 0:
+            return Response(
+                {"error": "Collected field has to be '0' to be deleted"},
+                status.HTTP_403_FORBIDDEN,
+            )
+
         find_campaign.delete()
 
         return Response("", status.HTTP_204_NO_CONTENT)
@@ -83,6 +89,8 @@ class CampaignIdView(APIView):
 
         except ValidationError as err:
             return Response({"error": err}, status.HTTP_422_UNPROCESSABLE_ENTITY)
+        except KeyError as err:
+            return Response({"error": err.args[0]}, status.HTTP_400_BAD_REQUEST)
 
 
 class DonationView(APIView):
