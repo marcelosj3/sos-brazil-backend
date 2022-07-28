@@ -7,6 +7,7 @@ from rest_framework.views import APIView, Request, Response, status
 
 from ongs.permissions import isOngOwner
 from ongs.serializers import OngPatchSerializer, OngSerializer
+from sos_brazil.exceptions import MissingKeyException
 
 from .models import Ong
 
@@ -16,6 +17,15 @@ class OngView(APIView):
     permission_classes = [IsAuthenticatedOrReadOnly]
 
     def post(self, request: Request):
+        causes = request.data.get("causes", False)
+
+        if not causes:
+            raise MissingKeyException("causes", "This field is required.")
+
+        if not isinstance(causes, list):
+            # TODO create an exception to handle this properly
+            raise Exception("Not a valid list of strings.")
+
         request.data["causes"] = [{"name": cause} for cause in request.data["causes"]]
         serialized = OngSerializer(data=request.data, context={"request": request})
         serialized.is_valid(raise_exception=True)
