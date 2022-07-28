@@ -4,10 +4,15 @@ from django.shortcuts import get_object_or_404
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from rest_framework.views import APIView, Request, Response, status
-from sos_brazil.exceptions import KeyTypeError, MissingKeyException
 
 from ongs.permissions import isOngOwner
-from ongs.serializers import OngPatchSerializer, OngSerializer
+from ongs.serializers import (
+    OngRemoveAdminSerializer,
+    OngResgisterAdminSerializer,
+    OngSerializer,
+)
+from ongs.utils import check_cnpj_mask
+from sos_brazil.exceptions import KeyTypeError, MissingKeyException
 
 from .models import Ong
 
@@ -52,6 +57,9 @@ class OngIdView(APIView):
                 request.data["causes"] = [
                     {"name": cause} for cause in request.data["causes"]
                 ]
+            cnpj = request.data.get("cnpj", None)
+            if cnpj:
+                check_cnpj_mask(cnpj)
             serialized = OngSerializer(instance=ong, data=request.data, partial=True)
             serialized.is_valid(raise_exception=True)
             serialized.save()
@@ -92,20 +100,43 @@ class OngIdRegisterAdmin(APIView):
     authentication_classes = [TokenAuthentication]
     permission_classes = [isOngOwner]
 
-    def patch(self, request: Request, ong_id: str):
+    def post(self, request: Request, ong_id: str):
+
         try:
+            if not request.data.get("admins", False):
+                raise MissingKeyException("admins", "This field is required.")
             request.data["admins"] = [
                 {"user_id": user_id} for user_id in request.data["admins"]
             ]
             ong = get_object_or_404(Ong, pk=ong_id)
             self.check_object_permissions(request, ong)
-            serialized = OngPatchSerializer(
+            serialized = OngResgisterAdminSerializer(
                 instance=ong, data=request.data, context={"request": request}
             )
             serialized.is_valid(raise_exception=True)
             serialized.save()
             return Response(serialized.data, status.HTTP_200_OK)
 
+        except Http404:
+            return Response({"Error": "Ong Not Found"}, status.HTTP_404_NOT_FOUND)
+        except ValidationError as err:
+            return Response({"error": err}, status.HTTP_422_UNPROCESSABLE_ENTITY)
+
+    def delete(self, request: Request, ong_id: str):
+        try:
+            if not request.data.get("admins", False):
+                raise MissingKeyException("admins", "This field is required.")
+            request.data["admins"] = [
+                {"user_id": user_id} for user_id in request.data["admins"]
+            ]
+            ong = get_object_or_404(Ong, pk=ong_id)
+            self.check_object_permissions(request, ong)
+            serialized = OngRemoveAdminSerializer(
+                instance=ong, data=request.data, context={"request": request}
+            )
+            serialized.is_valid(raise_exception=True)
+            serialized.save()
+            return Response(serialized.data, status.HTTP_200_OK)
         except Http404:
             return Response({"Error": "Ong Not Found"}, status.HTTP_404_NOT_FOUND)
         except ValidationError as err:
