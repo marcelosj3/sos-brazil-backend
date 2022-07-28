@@ -21,8 +21,14 @@ class CampaignSerializer(serializers.Serializer):
     goal = serializers.FloatField()
     goal_reached = serializers.BooleanField(required=False)
     is_active = serializers.BooleanField(required=False)
-    start_date = serializers.DateField(input_formats=DATE_INPUT_FORMATS)
-    end_date = serializers.DateField(input_formats=DATE_INPUT_FORMATS)
+    start_date = serializers.DateField(
+        format=DATE_INPUT_FORMATS[0],
+        input_formats=DATE_INPUT_FORMATS,
+    )
+    end_date = serializers.DateField(
+        format=DATE_INPUT_FORMATS[0],
+        input_formats=DATE_INPUT_FORMATS,
+    )
 
     def validate_goal(self, value):
         if value <= 0:
