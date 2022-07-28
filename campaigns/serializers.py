@@ -1,4 +1,5 @@
 from rest_framework import serializers
+
 from sos_brazil.exceptions import GoalValueException
 from sos_brazil.settings import DATE_INPUT_FORMATS
 
@@ -22,11 +23,10 @@ class CampaignSerializer(serializers.Serializer):
     end_date = serializers.DateField(input_formats=DATE_INPUT_FORMATS)
 
     def validate_goal(self, value):
-        if(value <= 0):
+        if value <= 0:
             raise GoalValueException()
 
         return value
-
 
     def create(self, validated_data: dict):
         campaign = Campaign.objects.create(**validated_data)
@@ -38,11 +38,11 @@ class CampaignSerializer(serializers.Serializer):
         wrong_keys = []
 
         for key in validated_data.keys():
-            if(key in non_updatable_keys):
+            if key in non_updatable_keys:
                 wrong_keys.append(key)
 
-        if(wrong_keys):
-            raise KeyError (f"Cannot update the key(s): {wrong_keys}")
+        if wrong_keys:
+            raise KeyError(f"Cannot update the key(s): {wrong_keys}")
 
         for key, value in validated_data.items():
             setattr(instance, key, value)

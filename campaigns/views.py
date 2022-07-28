@@ -28,7 +28,6 @@ class OngCampaignView(APIView):
         except Http404:
             return Response({"details": "Ong not found."}, status.HTTP_404_NOT_FOUND)
 
-
     def get(self, _: Request, ong_id: str):
         campaigns = Campaign.objects.filter(ong_id=ong_id)
         serialized = CampaignSerializer(instance=campaigns, many=True)
@@ -66,25 +65,30 @@ class CampaignIdView(APIView):
         except ValidationError as err:
             return Response({"error": err}, status.HTTP_422_UNPROCESSABLE_ENTITY)
 
-
-        if(find_campaign.collected > 0):
-            return Response({"error": "Collected field has to be '0' to be deleted"}, status.HTTP_403_FORBIDDEN)
+        if find_campaign.collected > 0:
+            return Response(
+                {"error": "Collected field has to be '0' to be deleted"},
+                status.HTTP_403_FORBIDDEN,
+            )
 
         find_campaign.delete()
 
         return Response("", status.HTTP_204_NO_CONTENT)
 
     def patch(self, request: Request, campaign_id: str):
-        campaign = get_object_or_404(Campaign, pk=campaign_id)
+        try:
+            campaign = get_object_or_404(Campaign, pk=campaign_id)
 
-        serialized = CampaignSerializer(
-            instance=campaign, data=request.data, partial=True
-        )
-        serialized.is_valid(raise_exception=True)
-        serialized.save()
+            serialized = CampaignSerializer(
+                instance=campaign, data=request.data, partial=True
+            )
+            serialized.is_valid(raise_exception=True)
+            serialized.save()
 
-        return Response(serialized.data, status.HTTP_200_OK)
+            return Response(serialized.data, status.HTTP_200_OK)
 
+        except ValidationError as err:
+            return Response({"error": err}, status.HTTP_422_UNPROCESSABLE_ENTITY)
         except KeyError as err:
             return Response({"error": err.args[0]}, status.HTTP_400_BAD_REQUEST)
 
