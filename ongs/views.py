@@ -5,7 +5,7 @@ from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from rest_framework.views import APIView, Request, Response, status
 
-from ongs.permissions import isOngOwner
+from ongs.permissions import IsOngOwner
 from ongs.serializers import OngPatchSerializer, OngSerializer
 from sos_brazil.exceptions import MissingKeyException
 
@@ -40,7 +40,7 @@ class OngView(APIView):
 
 class OngIdView(APIView):
     authentication_classes = [TokenAuthentication]
-    permission_classes = [IsAuthenticatedOrReadOnly, isOngOwner]
+    permission_classes = [IsAuthenticatedOrReadOnly, IsOngOwner]
 
     def patch(self, request: Request, ong_id):
         try:
@@ -88,7 +88,7 @@ class OngIdView(APIView):
 
 class OngIdRegisterAdmin(APIView):
     authentication_classes = [TokenAuthentication]
-    permission_classes = [isOngOwner]
+    permission_classes = [IsOngOwner]
 
     def patch(self, request: Request, ong_id: str):
         try:

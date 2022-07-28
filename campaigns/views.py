@@ -3,10 +3,11 @@ from django.http import Http404
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from rest_framework.authentication import TokenAuthentication
+from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from rest_framework.views import APIView, Request, Response, status
 
 from ongs.models import Ong
-from ongs.permissions import isOngOwner
+from ongs.permissions import IsOngOwner
 from sos_brazil.settings import DATE_INPUT_FORMATS
 
 from .models import Campaign
@@ -16,11 +17,12 @@ from .serializers import CampaignSerializer, DonationSerializer
 
 class OngCampaignView(APIView):
     authentication_classes = [TokenAuthentication]
-    permission_classes = [CampaignPermission]
+    permission_classes = [IsAuthenticatedOrReadOnly, IsOngOwner]
 
     def post(self, request: Request, ong_id: str):
         try:
             ong = get_object_or_404(Ong, pk=ong_id)
+            self.check_object_permissions(request, ong)
 
             serialized = CampaignSerializer(data=request.data)
             serialized.is_valid(raise_exception=True)
@@ -151,7 +153,7 @@ class DonationView(APIView):
 
 class CampaignEndView(APIView):
     authentication_classes = [TokenAuthentication]
-    permission_classes = [isOngOwner]
+    permission_classes = [IsOngOwner]
 
     def post(self, request: Request, campaign_id: str):
         try:
