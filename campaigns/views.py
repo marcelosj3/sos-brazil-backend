@@ -2,13 +2,15 @@ from django.core.exceptions import ValidationError
 from django.http import Http404
 from django.shortcuts import get_object_or_404
 from rest_framework.authentication import TokenAuthentication
+from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from rest_framework.views import APIView, Request, Response, status
 
-from campaigns.permissions import CampaignPermission
-from campaigns.serializers import CampaignSerializer, DonationSerializer
 from ongs.models import Ong
+from ongs.permissions import isOngOwner
 
 from .models import Campaign
+from .permissions import CampaignPermission
+from .serializers import CampaignSerializer, DonationSerializer
 
 
 class OngCampaignView(APIView):
@@ -45,6 +47,9 @@ class CampaignView(APIView):
 
 
 class CampaignIdView(APIView):
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticatedOrReadOnly, isOngOwner]
+
     def get(self, _: Request, campaign_id: str):
         try:
             campaign = get_object_or_404(Campaign, pk=campaign_id)
@@ -58,26 +63,30 @@ class CampaignIdView(APIView):
                 {"details": "Campaign not found."}, status.HTTP_404_NOT_FOUND
             )
 
-    def delete(self, response: Response, campaign_id: str):
+    def delete(self, request: Request, campaign_id: str):
         try:
-            find_campaign = get_object_or_404(Campaign, pk=campaign_id)
+            campaign = get_object_or_404(Campaign, pk=campaign_id)
+            self.check_object_permissions(request, campaign.ong)
 
         except ValidationError as err:
             return Response({"error": err}, status.HTTP_422_UNPROCESSABLE_ENTITY)
 
-        if find_campaign.collected > 0:
+        if campaign.collected > 0:
             return Response(
-                {"error": "Collected field has to be '0' to be deleted"},
+                {
+                    "error": "Cannot delete an campaign that has collected value higher than zero"
+                },
                 status.HTTP_403_FORBIDDEN,
             )
 
-        find_campaign.delete()
+        campaign.delete()
 
         return Response("", status.HTTP_204_NO_CONTENT)
 
     def patch(self, request: Request, campaign_id: str):
         try:
             campaign = get_object_or_404(Campaign, pk=campaign_id)
+            self.check_object_permissions(request, campaign.ong)
 
             serialized = CampaignSerializer(
                 instance=campaign, data=request.data, partial=True
