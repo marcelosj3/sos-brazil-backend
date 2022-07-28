@@ -46,6 +46,10 @@ class OngIdView(APIView):
         try:
             ong = get_object_or_404(Ong, pk=ong_id)
             self.check_object_permissions(request, ong)
+            if request.data.get("causes", None):
+                request.data["causes"] = [
+                    {"name": cause} for cause in request.data["causes"]
+                ]
             serialized = OngSerializer(instance=ong, data=request.data, partial=True)
             serialized.is_valid(raise_exception=True)
             serialized.save()
