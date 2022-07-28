@@ -1,14 +1,17 @@
 from django.core.exceptions import ValidationError
 from django.http import Http404
 from django.shortcuts import get_object_or_404
+from django.utils import timezone
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.views import APIView, Request, Response, status
 
-from campaigns.permissions import CampaignPermission
-from campaigns.serializers import CampaignSerializer, DonationSerializer
 from ongs.models import Ong
+from ongs.permissions import isOngOwner
+from sos_brazil.settings import DATE_INPUT_FORMATS
 
 from .models import Campaign
+from .permissions import CampaignPermission
+from .serializers import CampaignSerializer, DonationSerializer
 
 
 class OngCampaignView(APIView):
@@ -146,38 +149,34 @@ class DonationView(APIView):
             )
 
 
-# class EndCampaignView(APIView):
-#     authentication_classes = [TokenAuthentication]
-#     permission_classes = [CampaignPermission]
+class CampaignEndView(APIView):
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [isOngOwner]
 
-#     def post(self, request: Request, campaign_id: str):
-#         try:
-#             campaign = get_object_or_404(Campaign, pk=campaign_id)
-#             ong = Ong.objects.get(pk=campaign.__dict__["ong_id"])
-#             user = request.user
+    def post(self, request: Request, campaign_id: str):
+        try:
+            campaign = get_object_or_404(Campaign, pk=campaign_id)
+            self.check_object_permissions(request, campaign.ong)
 
-#             if user in ong.admins or user.is_superuser:
-#                 updated_campaign = {
-#                     **campaign.__dict__,
-#                     "is_active": False,
-#                     "end_date": str(date.today()),
-#                 }
+            time_now = timezone.now().strftime(DATE_INPUT_FORMATS[0])
 
-#                 serialized = CampaignSerializer(
-#                     instance=campaign,
-#                     data=updated_campaign,
-#                 )
-#                 serialized.is_valid(raise_exception=True)
-#                 serialized.save()
+            updated_campaign = {
+                **campaign.__dict__,
+                "is_active": False,
+                "end_date": time_now,
+            }
 
-#                 return Response(serialized.data, status.HTTP_200_OK)
+            serialized = CampaignSerializer(
+                instance=campaign, data=updated_campaign, context="end_campaign"
+            )
 
-#             return Response(
-#                 {"detail": "You do not have permission to perform this action."},
-#                 status.HTTP_403_FORBIDDEN,
-#             )
+            serialized.is_valid(raise_exception=True)
+            serialized.save()
+            return Response(serialized.data, status.HTTP_200_OK)
 
-#         except Http404:
-#             return Response(
-#                 {"details": "Campaign not found."}, status.HTTP_404_NOT_FOUND
-#             )
+        except ValidationError as err:
+            return Response({"error": err}, status.HTTP_422_UNPROCESSABLE_ENTITY)
+        except Http404:
+            return Response(
+                {"details": "Campaign not found."}, status.HTTP_404_NOT_FOUND
+            )
