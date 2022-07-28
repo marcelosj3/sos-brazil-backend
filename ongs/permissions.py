@@ -14,4 +14,11 @@ class isOngOwner(BasePermission):
     def has_object_permission(self, request: Request, _, obj: Ong):
         owner_method = {"PATCH", "DELETE"}
         for request.method in owner_method:
-            return request.user.__dict__["user_id"] in obj.admins.values()
+            authorized = False
+
+            for admin in obj.admins.values():
+                if request.user.user_id == admin["user_id"]:
+                    authorized = True
+                    break
+
+            return authorized
