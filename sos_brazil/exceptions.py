@@ -40,6 +40,17 @@ class InvalidKeyException(APIException):
         self.status_code = status_code
 
 
-class InvalidCnpjException(APIException):
-    status_code = status.HTTP_422_UNPROCESSABLE_ENTITY
-    default_detail = "CNPJ must be a string in the format: 00.000.000/0000-00."
+class InvalidFormatException(APIException):
+    default_detail = "Invalid format."
+
+    def __init__(
+        self,
+        messages: dict,
+        status_code: int = status.HTTP_422_UNPROCESSABLE_ENTITY,
+        *args,
+        **kwargs,
+    ):
+        super().__init__(*args, **kwargs)
+
+        self.detail = messages
+        self.status_code = status_code

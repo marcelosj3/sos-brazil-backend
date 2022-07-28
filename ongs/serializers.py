@@ -1,11 +1,10 @@
 from causes.models import Cause
 from causes.serializers import CauseSerializer
 from rest_framework import serializers
-from ongs.utils import check_cnpj_mask
-from sos_brazil.exceptions import InvalidCnpjException
 from users.serializers import UserOngAdminSerializer
 
 from ongs.models import Ong
+from ongs.utils import check_cnpj_mask
 
 
 class OngSerializer(serializers.ModelSerializer):
@@ -25,18 +24,18 @@ class OngSerializer(serializers.ModelSerializer):
         ]
 
     def create(self, validated_data: dict):
-        cnpj = validated_data.get("cnpj", None)
+        check_cnpj_mask(validated_data.get("cnpj", ""))
 
-        if not check_cnpj_mask(cnpj):
-            raise InvalidCnpjException()
-
-        causes = validated_data.pop("causes")
         admin = self.context["request"].user
+        causes = validated_data.pop("causes")
         ong = Ong.objects.create(**validated_data)
+
         for cause in causes:
             cause, _ = Cause.objects.get_or_create(**cause)
             ong.causes.add(cause)
+
         ong.admins.add(admin)
+
         return ong
 
     def update(self, instance: Ong, validated_data: dict):

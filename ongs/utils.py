@@ -1,12 +1,17 @@
-def check_cnpj_mask(c: str):
-    if len(c) == 18:
-        nums = [c[:2], c[3:6], c[7:10], c[11:15], c[16:18]]
+import re
 
-        if c[2] == "." and c[6] == "." and c[10] == "/" and c[15] == "-":
-            for x in nums:
-                if not x.isnumeric():
-                    return False
+from sos_brazil.exceptions import InvalidFormatException
 
-            return True
 
-    return False
+def check_cnpj_mask(cnpj: str):
+    pattern = "^\d{2}\.\d{3}\.\d{3}\/\d{4}\-\d{2}$"
+
+    if not re.findall(pattern, cnpj):
+        raise InvalidFormatException(
+            {
+                "error": "Invalid CNPJ format.",
+                "expected_format": "XX.XXX.XXX/XXXX-XX",
+            }
+        )
+
+    return True
