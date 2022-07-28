@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from sos_brazil.exceptions import GoalValueException
+from sos_brazil.settings import DATE_INPUT_FORMATS
 
 from .models import Campaign, Donation
 
@@ -17,8 +18,8 @@ class CampaignSerializer(serializers.Serializer):
     goal = serializers.FloatField()
     goal_reached = serializers.BooleanField(required=False)
     is_active = serializers.BooleanField(required=False)
-    start_date = serializers.DateField()
-    end_date = serializers.DateField()
+    start_date = serializers.DateField(input_formats=DATE_INPUT_FORMATS)
+    end_date = serializers.DateField(input_formats=DATE_INPUT_FORMATS)
 
     def validate_goal(self, value):
         if(value <= 0):
