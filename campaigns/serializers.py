@@ -45,7 +45,7 @@ class CampaignSerializer(serializers.Serializer):
         start_date = validated_data.get("start_date", instance.start_date)
         end_date = validated_data.get("end_date", instance.end_date)
 
-        if start_date >= end_date:
+        if start_date > end_date:
             raise CampaignDateException()
 
         check_dates(start_date, end_date)
