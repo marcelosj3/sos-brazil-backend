@@ -1,4 +1,4 @@
-from django.core.exceptions import ValidationError, MultipleObjectsReturned
+from django.core.exceptions import ValidationError
 from django.http import Http404
 from django.shortcuts import get_object_or_404
 from rest_framework.authentication import TokenAuthentication
@@ -7,7 +7,6 @@ from rest_framework.views import APIView, Request, Response, status
 from campaigns.permissions import CampaignPermission
 from campaigns.serializers import CampaignSerializer, DonationSerializer
 from ongs.models import Ong
-from ongs.serializers import OngSerializer
 
 from .models import Campaign
 
