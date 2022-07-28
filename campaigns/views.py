@@ -71,6 +71,8 @@ class CampaignIdView(APIView):
                 {"details": "Campaign not found."}, status.HTTP_404_NOT_FOUND
             )
 
+        except ValidationError as err:
+            return Response({"error": err}, status.HTTP_422_UNPROCESSABLE_ENTITY)
         
 
     def delete(self, response: Response, campaign_id: str):
