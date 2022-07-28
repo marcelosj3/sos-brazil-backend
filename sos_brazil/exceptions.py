@@ -59,3 +59,13 @@ class InvalidFormatException(APIException):
 
         self.detail = messages
         self.status_code = status_code
+
+
+class BadStartDateException(APIException):
+    status_code = status.HTTP_400_BAD_REQUEST
+    default_detail = "The start_date must be from today."
+
+
+class BadEndDateException(APIException):
+    status_code = status.HTTP_400_BAD_REQUEST
+    default_detail = "The end_date must be later than the start_date."
