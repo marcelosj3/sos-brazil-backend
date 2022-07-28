@@ -85,6 +85,9 @@ class CampaignIdView(APIView):
 
         return Response(serialized.data, status.HTTP_200_OK)
 
+        except KeyError as err:
+            return Response({"error": err.args[0]}, status.HTTP_400_BAD_REQUEST)
+
 
 class DonationView(APIView):
     authentication_classes = [TokenAuthentication]

@@ -34,6 +34,16 @@ class CampaignSerializer(serializers.Serializer):
         return campaign
 
     def update(self, instance, validated_data):
+        non_updatable_keys = ["collected", "goal_reached"]
+        wrong_keys = []
+
+        for key in validated_data.keys():
+            if(key in non_updatable_keys):
+                wrong_keys.append(key)
+
+        if(wrong_keys):
+            raise KeyError (f"Cannot update the key(s): {wrong_keys}")
+
         for key, value in validated_data.items():
             setattr(instance, key, value)
 
