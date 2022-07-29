@@ -95,6 +95,10 @@ class CampaignSerializer(serializers.Serializer):
         if wrong_keys:
             raise KeyError(f"Cannot update the key(s): {wrong_keys}")
 
+        validated_data["goal_reached"] = bool(
+            validated_data.get("goal", instance.goal) >= instance.collected
+        )
+
         for key, value in validated_data.items():
             setattr(instance, key, value)
 
