@@ -3,7 +3,7 @@ from django.http import Http404
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from rest_framework.authentication import TokenAuthentication
-from rest_framework.permissions import IsAuthenticatedOrReadOnly
+from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
 from rest_framework.views import APIView, Request, Response, status
 
 from ongs.models import Ong
@@ -11,7 +11,6 @@ from ongs.permissions import IsOngOwner
 from sos_brazil.settings import DATE_INPUT_FORMATS
 
 from .models import Campaign
-from .permissions import CampaignPermission
 from .serializers import CampaignSerializer, DonationSerializer
 
 
@@ -33,11 +32,23 @@ class OngCampaignView(APIView):
         except Http404:
             return Response({"details": "Ong not found."}, status.HTTP_404_NOT_FOUND)
 
-    def get(self, _: Request, ong_id: str):
-        campaigns = Campaign.objects.filter(ong_id=ong_id)
-        serialized = CampaignSerializer(instance=campaigns, many=True)
+        except ValidationError as err:
+            return Response({"error": err}, status.HTTP_422_UNPROCESSABLE_ENTITY)
 
-        return Response({"ong_campaigns": serialized.data}, status.HTTP_200_OK)
+    def get(self, _: Request, ong_id: str):
+        try:
+            get_ong = get_object_or_404(Ong, pk=ong_id)
+
+            campaigns = Campaign.objects.filter(ong_id=ong_id)
+            serialized = CampaignSerializer(instance=campaigns, many=True)
+
+            return Response({"ong_campaigns": serialized.data}, status.HTTP_200_OK)
+
+        except Http404:
+            return Response({"details": "Ong not found."}, status.HTTP_404_NOT_FOUND)
+
+        except ValidationError as err:
+            return Response({"error": err}, status.HTTP_422_UNPROCESSABLE_ENTITY)
 
 
 class CampaignView(APIView):
@@ -50,6 +61,9 @@ class CampaignView(APIView):
 
 
 class CampaignIdView(APIView):
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticatedOrReadOnly, IsOngOwner]
+
     def get(self, _: Request, campaign_id: str):
         try:
             campaign = get_object_or_404(Campaign, pk=campaign_id)
@@ -63,26 +77,33 @@ class CampaignIdView(APIView):
                 {"details": "Campaign not found."}, status.HTTP_404_NOT_FOUND
             )
 
-    def delete(self, response: Response, campaign_id: str):
+        except ValidationError as err:
+            return Response({"error": err}, status.HTTP_422_UNPROCESSABLE_ENTITY)
+
+    def delete(self, request: Request, campaign_id: str):
         try:
-            find_campaign = get_object_or_404(Campaign, pk=campaign_id)
+            campaign = get_object_or_404(Campaign, pk=campaign_id)
+            self.check_object_permissions(request, campaign.ong)
 
         except ValidationError as err:
             return Response({"error": err}, status.HTTP_422_UNPROCESSABLE_ENTITY)
 
-        if find_campaign.collected > 0:
+        if campaign.collected > 0:
             return Response(
-                {"error": "Collected field has to be '0' to be deleted"},
+                {
+                    "error": "Cannot delete an campaign that has collected value higher than zero"
+                },
                 status.HTTP_403_FORBIDDEN,
             )
 
-        find_campaign.delete()
+        campaign.delete()
 
         return Response("", status.HTTP_204_NO_CONTENT)
 
     def patch(self, request: Request, campaign_id: str):
         try:
             campaign = get_object_or_404(Campaign, pk=campaign_id)
+            self.check_object_permissions(request, campaign.ong)
 
             serialized = CampaignSerializer(
                 instance=campaign, data=request.data, partial=True
@@ -100,11 +121,10 @@ class CampaignIdView(APIView):
 
 class DonationView(APIView):
     authentication_classes = [TokenAuthentication]
-    permission_classes = [CampaignPermission]
+    permission_classes = [IsAuthenticated]
 
-    def post(self, request: Request, ong_id: str, campaign_id: str):
+    def post(self, request: Request, campaign_id: str):
         try:
-            get_object_or_404(Ong, pk=ong_id)
             campaign = get_object_or_404(Campaign, pk=campaign_id)
 
             data = request.data
@@ -124,10 +144,6 @@ class DonationView(APIView):
                     status.HTTP_400_BAD_REQUEST,
                 )
 
-            donation = DonationSerializer(data=data)
-            donation.is_valid(raise_exception=True)
-            donation.save(user=user, campaign=campaign)
-
             updated_campaign = {
                 **campaign.__dict__,
                 "collected": campaign.collected + value,
@@ -137,14 +153,19 @@ class DonationView(APIView):
                 updated_campaign["goal_reached"] = True
 
             serialized = CampaignSerializer(
-                instance=campaign,
-                data=updated_campaign,
+                instance=campaign, data=updated_campaign, context="donation"
             )
             serialized.is_valid(raise_exception=True)
             serialized.save()
 
+            donation = DonationSerializer(data=data)
+            donation.is_valid(raise_exception=True)
+            donation.save(user=user, campaign=campaign)
+
             return Response(donation.data, status.HTTP_201_CREATED)
 
+        except ValidationError as err:
+            return Response({"error": err}, status.HTTP_422_UNPROCESSABLE_ENTITY)
         except Http404:
             return Response(
                 {"details": "Campaign not found."}, status.HTTP_404_NOT_FOUND

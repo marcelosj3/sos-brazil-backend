@@ -21,8 +21,14 @@ class CampaignSerializer(serializers.Serializer):
     goal = serializers.FloatField()
     goal_reached = serializers.BooleanField(required=False)
     is_active = serializers.BooleanField(required=False)
-    start_date = serializers.DateField(input_formats=DATE_INPUT_FORMATS)
-    end_date = serializers.DateField(input_formats=DATE_INPUT_FORMATS)
+    start_date = serializers.DateField(
+        format=DATE_INPUT_FORMATS[0],
+        input_formats=DATE_INPUT_FORMATS,
+    )
+    end_date = serializers.DateField(
+        format=DATE_INPUT_FORMATS[0],
+        input_formats=DATE_INPUT_FORMATS,
+    )
 
     def validate_goal(self, value):
         if value <= 0:
@@ -34,6 +40,19 @@ class CampaignSerializer(serializers.Serializer):
         campaign = Campaign.objects.create(**validated_data)
 
         return campaign
+
+    def donation(self, instance: Campaign, validated_data: OrderedDict):
+        is_donation_view = self.context == "donation"
+
+        if not is_donation_view:
+            return False
+
+        for key, value in validated_data.items():
+            setattr(instance, key, value)
+
+        instance.save()
+
+        return instance
 
     def end_campaign(self, instance: Campaign, validated_data: OrderedDict):
         is_end_campaign_view = self.context == "end_campaign"
@@ -50,6 +69,9 @@ class CampaignSerializer(serializers.Serializer):
 
     def update(self, instance: Campaign, validated_data: OrderedDict):
         if self.end_campaign(instance, validated_data):
+            return instance
+
+        if self.donation(instance, validated_data):
             return instance
 
         non_updatable_keys = ["collected", "goal_reached"]

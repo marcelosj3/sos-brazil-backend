@@ -80,7 +80,9 @@ class OngRemoveAdminSerializer(serializers.Serializer):
             if len(instance.admins.values()) > 1:
                 instance.admins.remove(admin["user_id"])
             else:
-                raise MinimumAdminValueException(message="Minimum one admin is required.")
+                raise MinimumAdminValueException(
+                    message="Minimum one admin is required."
+                )
         instance.save()
 
         return instance
