@@ -77,7 +77,7 @@ class KeyTypeError(APIException):
         self.status_code = status_code
 
 
-class MinimumAdminValue(APIException):
+class MinimumAdminValueException(APIException):
     default_detail = "Minimum one admin required."
 
     def __init__(
