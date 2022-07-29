@@ -24,9 +24,11 @@ class OngSerializer(serializers.ModelSerializer):
             "causes",
         ]
 
-    def create(self, validated_data: dict):
-        check_cnpj_mask(validated_data.get("cnpj", ""))
+    def validate_cnpj(self, value):
+        if check_cnpj_mask(value):
+            return value
 
+    def create(self, validated_data: dict):
         admin = self.context["request"].user
         causes = validated_data.pop("causes")
         ong = Ong.objects.create(**validated_data)
