@@ -82,11 +82,11 @@ class CampaignSerializer(serializers.Serializer):
 
         non_updatable_keys = ["collected", "goal_reached"]
         wrong_keys = []
-        start_date = validated_data.get("start_date", None)
-        end_date = validated_data.get("end_date", None)
+        start_date = validated_data.get("start_date", instance.start_date)
+        end_date = validated_data.get("end_date", instance.end_date)
 
-        if start_date or end_date:
-            check_dates(start_date, end_date, instance)
+        if start_date != instance.start_date or end_date != instance.end_date:
+            check_dates(start_date, end_date)
 
         for key in validated_data.keys():
             if key in non_updatable_keys:
