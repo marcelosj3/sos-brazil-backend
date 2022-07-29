@@ -3,7 +3,7 @@ from typing import OrderedDict
 from rest_framework import serializers
 
 from campaigns.utils import check_dates
-from sos_brazil.exceptions import GoalValueException
+from sos_brazil.exceptions import GoalValueException, InvalidKeyException
 from sos_brazil.settings import DATE_INPUT_FORMATS
 
 from .models import Campaign, Donation
@@ -93,7 +93,9 @@ class CampaignSerializer(serializers.Serializer):
                 wrong_keys.append(key)
 
         if wrong_keys:
-            raise KeyError(f"Cannot update the key(s): {wrong_keys}")
+            raise InvalidKeyException(
+                message={"detail": "Cannot update key", "non_updatable": wrong_keys}
+            )
 
         validated_data["goal_reached"] = bool(
             validated_data.get("goal", instance.goal) >= instance.collected
