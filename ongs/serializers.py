@@ -1,11 +1,11 @@
-from rest_framework import serializers
-
 from causes.models import Cause
 from causes.serializers import CauseSerializer
+from rest_framework import serializers
+from sos_brazil.exceptions import MinimumAdminValueException
+from users.serializers import UserOngAdminSerializer
+
 from ongs.models import Ong
 from ongs.utils import check_cnpj_mask
-from sos_brazil.exceptions import MinimumAdminValue
-from users.serializers import UserOngAdminSerializer
 
 
 class OngSerializer(serializers.ModelSerializer):
@@ -80,7 +80,7 @@ class OngRemoveAdminSerializer(serializers.Serializer):
             if len(instance.admins.values()) > 1:
                 instance.admins.remove(admin["user_id"])
             else:
-                raise MinimumAdminValue(message="Minimum one admin is required.")
+                raise MinimumAdminValueException(message="Minimum one admin is required.")
         instance.save()
 
         return instance
