@@ -75,3 +75,18 @@ class KeyTypeError(APIException):
         super().__init__(*args, **kwargs)
         self.detail = {key.lower(): message}
         self.status_code = status_code
+
+
+class MinimumAdminValueException(APIException):
+    default_detail = "Minimum one admin required."
+
+    def __init__(
+        self,
+        message: str,
+        status_code: int = status.HTTP_404_NOT_FOUND,
+        *args,
+        **kwargs,
+    ):
+        super().__init__(*args, **kwargs)
+        self.detail = message
+        self.status_code = status_code
