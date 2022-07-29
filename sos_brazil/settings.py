@@ -51,6 +51,12 @@ THIRD_PARTY_APPS = ["rest_framework", "rest_framework.authtoken"]
 
 INSTALLED_APPS = DJANGO_APPS + MY_APPS + THIRD_PARTY_APPS
 
+REST_FRAMEWORK = {
+    "DEFAULT_AUTHENTICATION_CLASSES": (
+        "rest_framework.authentication.TokenAuthentication",
+    )
+}
+
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
@@ -145,3 +151,5 @@ if DATABASE_URL:
     DATABASES["default"].update(db_from_env)
 
     DEBUG = False
+
+DATE_INPUT_FORMATS = ["%d/%m/%Y"]
