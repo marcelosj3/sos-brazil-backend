@@ -68,9 +68,4 @@ class BadStartDateException(APIException):
 
 class BadEndDateException(APIException):
     status_code = status.HTTP_400_BAD_REQUEST
-    default_detail = "The end_date must be later than the start_date."
-
-
-class CampaignDateException(APIException):
-    status_code = status.HTTP_400_BAD_REQUEST
-    default_detail = "The start_date can't be later or equal to the end_date."
+    default_detail = "The start_date can't be later to the end_date."

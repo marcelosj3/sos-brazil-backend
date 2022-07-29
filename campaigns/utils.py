@@ -7,7 +7,5 @@ def check_dates(start_date, end_date):
     if start_date < date.today():
         raise BadStartDateException()
 
-    elif end_date <= start_date:
+    elif start_date > end_date:
         raise BadEndDateException()
-
-    return True
