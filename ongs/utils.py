@@ -3,7 +3,7 @@ import re
 from sos_brazil.exceptions import InvalidFormatException
 
 
-def check_cnpj_mask(cnpj: str):
+def check_cnpj_mask(cnpj):
     pattern = "^\d{2}\.\d{3}\.\d{3}\/\d{4}\-\d{2}$"
 
     if not re.findall(pattern, cnpj):
