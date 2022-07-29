@@ -1,5 +1,3 @@
-from curses.ascii import HT
-
 from django.core.exceptions import ValidationError
 from django.http import Http404
 from django.shortcuts import get_object_or_404
