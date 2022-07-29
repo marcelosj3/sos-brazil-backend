@@ -1,9 +1,10 @@
 from typing import OrderedDict
 
 from rest_framework import serializers
-
 from sos_brazil.exceptions import GoalValueException
 from sos_brazil.settings import DATE_INPUT_FORMATS
+
+from campaigns.utils import check_dates
 
 from .models import Campaign, Donation
 
@@ -37,6 +38,11 @@ class CampaignSerializer(serializers.Serializer):
         return value
 
     def create(self, validated_data: dict):
+        start_date = validated_data.get("start_date", None)
+        end_date = validated_data.get("end_date", None)
+
+        check_dates(start_date, end_date)
+
         campaign = Campaign.objects.create(**validated_data)
 
         return campaign
@@ -76,6 +82,10 @@ class CampaignSerializer(serializers.Serializer):
 
         non_updatable_keys = ["collected", "goal_reached"]
         wrong_keys = []
+        start_date = validated_data.get("start_date", instance.start_date)
+        end_date = validated_data.get("end_date", instance.end_date)
+
+        check_dates(start_date, end_date)
 
         for key in validated_data.keys():
             if key in non_updatable_keys:

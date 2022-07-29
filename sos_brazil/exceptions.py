@@ -61,6 +61,16 @@ class InvalidFormatException(APIException):
         self.status_code = status_code
 
 
+class BadStartDateException(APIException):
+    status_code = status.HTTP_400_BAD_REQUEST
+    default_detail = "The start_date must be from today."
+
+
+class BadEndDateException(APIException):
+    status_code = status.HTTP_400_BAD_REQUEST
+    default_detail = "The start_date can't be later to the end_date."
+
+
 class KeyTypeError(APIException):
     default_detail = "Expected a list of items"
 
