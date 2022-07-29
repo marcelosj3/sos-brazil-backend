@@ -98,7 +98,7 @@ class CampaignSerializer(serializers.Serializer):
             )
 
         validated_data["goal_reached"] = bool(
-            validated_data.get("goal", instance.goal) >= instance.collected
+            validated_data.get("goal", instance.goal) <= instance.collected
         )
 
         for key, value in validated_data.items():
