@@ -41,6 +41,19 @@ class CampaignSerializer(serializers.Serializer):
 
         return campaign
 
+    def donation(self, instance: Campaign, validated_data: OrderedDict):
+        is_donation_view = self.context == "donation"
+
+        if not is_donation_view:
+            return False
+
+        for key, value in validated_data.items():
+            setattr(instance, key, value)
+
+        instance.save()
+
+        return instance
+
     def end_campaign(self, instance: Campaign, validated_data: OrderedDict):
         is_end_campaign_view = self.context == "end_campaign"
 
@@ -56,6 +69,9 @@ class CampaignSerializer(serializers.Serializer):
 
     def update(self, instance: Campaign, validated_data: OrderedDict):
         if self.end_campaign(instance, validated_data):
+            return instance
+
+        if self.donation(instance, validated_data):
             return instance
 
         non_updatable_keys = ["collected", "goal_reached"]
