@@ -57,9 +57,7 @@ class OngIdView(APIView):
                 request.data["causes"] = [
                     {"name": cause} for cause in request.data["causes"]
                 ]
-            cnpj = request.data.get("cnpj", None)
-            if cnpj:
-                check_cnpj_mask(cnpj)
+
             serialized = OngSerializer(instance=ong, data=request.data, partial=True)
             serialized.is_valid(raise_exception=True)
             serialized.save()
