@@ -106,3 +106,21 @@ class MinimumAdminValueException(APIException):
         super().__init__(*args, **kwargs)
         self.detail = message
         self.status_code = status_code
+
+
+class NotFoundException(APIException):
+    def __init__(
+        self,
+        instance_name: str,
+        status_code: int = status.HTTP_404_NOT_FOUND,
+        *args,
+        **kwargs,
+    ):
+        super().__init__(*args, **kwargs)
+        self.detail = f"{instance_name.title()} not found."
+        self.status_code = status_code
+
+
+class IncorrectUUIDException(APIException):
+    status_code = status.HTTP_422_UNPROCESSABLE_ENTITY
+    default_detail = "Incorrect UUID format received"
