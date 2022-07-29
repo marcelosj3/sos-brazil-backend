@@ -4,7 +4,6 @@ from django.shortcuts import get_object_or_404
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from rest_framework.views import APIView, Request, Response, status
-from sos_brazil.exceptions import KeyTypeError, MissingKeyException
 
 from ongs.permissions import IsOngOwner
 from ongs.serializers import (
@@ -13,6 +12,7 @@ from ongs.serializers import (
     OngSerializer,
 )
 from ongs.utils import check_cnpj_mask
+from sos_brazil.exceptions import KeyTypeError, MissingKeyException
 
 from .models import Ong
 
