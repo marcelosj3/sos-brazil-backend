@@ -69,3 +69,19 @@ class BadStartDateException(APIException):
 class BadEndDateException(APIException):
     status_code = status.HTTP_400_BAD_REQUEST
     default_detail = "The start_date can't be later to the end_date."
+
+
+class KeyTypeError(APIException):
+    default_detail = "Expected a list of items"
+
+    def __init__(
+        self,
+        key: str,
+        message: str,
+        status_code: int = status.HTTP_400_BAD_REQUEST,
+        *args,
+        **kwargs,
+    ):
+        super().__init__(*args, **kwargs)
+        self.detail = {key.lower(): message}
+        self.status_code = status_code
