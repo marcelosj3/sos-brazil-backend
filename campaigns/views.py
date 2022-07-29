@@ -32,11 +32,23 @@ class OngCampaignView(APIView):
         except Http404:
             return Response({"details": "Ong not found."}, status.HTTP_404_NOT_FOUND)
 
-    def get(self, _: Request, ong_id: str):
-        campaigns = Campaign.objects.filter(ong_id=ong_id)
-        serialized = CampaignSerializer(instance=campaigns, many=True)
+        except ValidationError as err:
+            return Response({"error": err}, status.HTTP_422_UNPROCESSABLE_ENTITY)
 
-        return Response({"ong_campaigns": serialized.data}, status.HTTP_200_OK)
+    def get(self, _: Request, ong_id: str):
+        try:
+            get_ong = get_object_or_404(Ong, pk=ong_id)
+
+            campaigns = Campaign.objects.filter(ong_id=ong_id)
+            serialized = CampaignSerializer(instance=campaigns, many=True)
+
+            return Response({"ong_campaigns": serialized.data}, status.HTTP_200_OK)
+
+        except Http404:
+            return Response({"details": "Ong not found."}, status.HTTP_404_NOT_FOUND)
+
+        except ValidationError as err:
+            return Response({"error": err}, status.HTTP_422_UNPROCESSABLE_ENTITY)
 
 
 class CampaignView(APIView):
@@ -64,6 +76,9 @@ class CampaignIdView(APIView):
             return Response(
                 {"details": "Campaign not found."}, status.HTTP_404_NOT_FOUND
             )
+
+        except ValidationError as err:
+            return Response({"error": err}, status.HTTP_422_UNPROCESSABLE_ENTITY)
 
     def delete(self, request: Request, campaign_id: str):
         try:
