@@ -92,6 +92,7 @@ class OngIdView(OngGenericView):
         ong = self.get_ong_or_404(ong_id)
         self.check_object_permissions(request, ong)
         ong.delete()
+        return Response("", status.HTTP_204_NO_CONTENT)
 
 
 class OngIdManageAdmins(OngGenericView):
